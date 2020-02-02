@@ -70,7 +70,34 @@ class Edge:
     def hashcode(self):
         pass
     
-    def equal(self, Edge edge):
+    def equal(self,edge):
         pass
+
+# class to represent the graph
+class Graph:
+    def __init__(self, vertexCount):
+        self.vertexCount = vertexCount
+        self.edgeCount = 0
+        self.graph = []
+        for i in range(vertexCount):
+            self.graph.append([])
+    
+    def getvertexCount(self):
+        return self.vertexCount
+    def getedgeCount(self):
+        return self.edgeCount
+    
+    def addEdge(self, fromIndex, toIndex, edgeCost):
+        self.graph[fromIndex].append(Edge(fromIndex, toIndex, edgeCost))
+        self.graph[toIndex].append(Edge(toIndex,fromIndex,edgeCost))
+        self.edgeCount += 1
+    
+    def getedgeCost(self, fromIndex, toIndex):
+        for e in self.graph[fromIndex]:
+            if e.gettoIndex == toIndex:
+                return e.getedgeCost()
+        return -1
+
+
 
 
