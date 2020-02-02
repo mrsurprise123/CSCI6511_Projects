@@ -15,5 +15,45 @@ class Vertex:
     
     @classmethod
     def addVertex(cls, vertexIndex, vertexSquare):
-        
+        newVertex = Vertex(vertexIndex, vertexSquare)
+        if len(cls.vertices) == vertexIndex:
+            cls.vertices.append(newVertex)
+        else:
+            print('Can not add this new vertex, because it is not inputted in order!')
+    
+    def setPathcost(self,pathCost):
+        self.pathCost = pathCost
+    
+    def getPathcost(self):
+        return self.pathCost
+    
+    def getfValue(self):
+        return self.fValue
+    
+    def setfValue(self,fvalue):
+        self.fValue = fvalue
+    
+    def getgValue(self):
+        return self.gValue
+    
+    def setgValue(self,gValue):
+        self.gValue = gValue
+    
+    def getvertexIndex(self):
+        return self.vertexIndex
+    
+    def getvertexSquare(self):
+        return self.vertexSquare
+    
+    @classmethod
+    def getVertex(cls,vertexIndex):
+        return cls.vertices[vertexIndex]
+
+    @classmethod
+    def clearVertices(cls):
+        cls.vertices.clear()
+
+
+
+
 
