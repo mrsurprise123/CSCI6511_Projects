@@ -53,7 +53,24 @@ class Vertex:
     def clearVertices(cls):
         cls.vertices.clear()
 
-
-
+# class to represent the edges
+class Edge:
+    def __init__(self,fromIndex,toIndex,edgeCost):
+        self.fromIndex = fromIndex
+        self.toIndex = toIndex
+        self.edgeCost = edgeCost
+    
+    def getfromIndex(self):
+        return self.fromIndex
+    def gettoIndex(self):
+        return self.toIndex
+    def getedgeCost(self):
+        return self.edgeCost
+    
+    def hashcode(self):
+        pass
+    
+    def equal(self, Edge edge):
+        pass
 
 
