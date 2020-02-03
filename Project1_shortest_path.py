@@ -1,6 +1,7 @@
 # This is the Python project for CSCI66511
 # @author Yihan chen
 from queue import PriorityQueue
+import math
 
 #class to repersents the vertices of graphs
 class Vertex:
@@ -138,6 +139,83 @@ class UniformCostSearch:
                     neighborVertex.setPathcost(currentVertex + pathcost)
                     queue.remove(neighborVertex)
                     queue.put(neighborVertex)
+    
+    def hasPathTo(self,vertex):
+        return self.marked[vertex]
+    
+    def pathTo(self, vertex):
+        if not self.hasPathTo(vertex):
+            return null
+        path = []
+        x = vertex
+        while x != self.fromIndex:
+            path.append(x)
+            x = self.edgeTo(x)
+        path.append(self.fromIndex)
+        return path
+
+# class to repersent the A* algorithm
+class AStar:
+    def __init__(self, graph, fromIndex, toIndex, maxSize):
+        self.marked = [False for i in range(graph.getvertexCount())]
+        self.edgeTo = [0 for i in range(graph.getedgeCount())]
+        self.fromIndex = fromIndex
+        self.toIndex = toIndex
+        self.astar(graph, maSize)
+    
+    def astar(self, graph, maxSize):
+        Vertex.getVertex(self.fromIndex).setPathcost(0)
+        Vertex.getVertex(self.fromIndex).setfValue(heuristic(self.fromIndex, self.toIndex))
+        queue = PriorityQueue(maxSize)
+        queue.put(Vertex.getVertex(self.fromIndex))
+        foundPath = False
+
+        while queue.empty() == False and not foundPath:
+            currentVertex = queue.get()
+            self.marked[currentVertex.getvertexIndex()] = True
+
+            if currentVertex.getvertexIndex == self.toIndex:
+                foundPath = True
+            
+            for edge in graph.graph[currentVertex.getvertexIndex()]:
+                neighbor = edge.gettoIndex()
+                if self.marked[neighbor]:
+                    continue
+
+                neighborVertex = Vertex.getVertex(neighbor)
+                tentativeGValue = currentVertex.getgValue() + edge.getedgeCost()
+                estimatedFScore = tentativeGValue + heuritic(neighborVertex, self.toIndex)
+
+                if not self.marked[neighbor] and not neighborVertex in queue:
+                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
+                    neighborVertex.setfValue(estimatedFScore)
+                    neighborVertex.setgValue(tentativeGValue)
+                    queue.put(neighborVertex)
+                elif neighborVertex in queue and estimatedFScore < neighborVertex.getfValue:
+                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
+                    neighborVertex.setfValue(estimatedFScore)
+                    neighborVertex.setgValue(tentativeGValue)
+                    queue.remove(neighborVertex)
+                    queue.put(neighborVertex)
+    
+    def heuristic(vertex1, vertex2):
+        v1 = Vertex.getVertex(vertex1)
+        v2 = Vertex.getVertex(vertex2)
+
+        x = abs((v1.getvertexSquare / 10) - (v2.getvertexSquare / 10)) - 1
+        y = abs((v1.getvertexSquare % 10) - (v2.getvertexSquare % 10)) - 1
+
+        if x >= 0:
+            if y >= 0:
+                return sqrt(math.pow(x,2) + math.pow(y,3)) * 100
+            else:
+                return x * 100
+        else:
+            if y >= 0:
+                return y * 100
+            else:
+                return 0
+
     
     def hasPathTo(self,vertex):
         return self.marked[vertex]
