@@ -1,5 +1,6 @@
 # This is the Python project for CSCI66511
 # @author Yihan chen
+from queue import PriorityQueue
 
 #class to repersents the vertices of graphs
 class Vertex:
@@ -13,6 +14,9 @@ class Vertex:
         self.gValue = 0
         self.fValue = 0
     
+    def __lt__(self, other):
+        return self.pathCost < other.pathCost
+
     @classmethod
     def addVertex(cls, vertexIndex, vertexSquare):
         newVertex = Vertex(vertexIndex, vertexSquare)
@@ -97,6 +101,60 @@ class Graph:
             if e.gettoIndex == toIndex:
                 return e.getedgeCost()
         return -1
+
+# class to repersent the uniform cost search
+
+class UniformCostSearch:
+    def __init__(self, graph, fromIndex, toIndex, maxSize):
+        self.marked = [False for i in range(graph.getvertexCount())]
+        self.edgeTo = [0 for i in range(graph.getedgeCount())]
+        self.fromIndex = fromIndex
+        self.toIndex = toIndex
+        self.bfs(graph, maSize)
+    
+    def bfs(self,graph, maxSize):
+        Vertex.getVertex(self.fromIndex).setPathcost(0)
+        queue = PriorityQueue(maxSize)
+        queue.put(Vertex.getVertex(self.fromIndex))
+        foundPath = False
+
+        while queue.empty() == False and not foundPath:
+            currentVertex = queue.get()
+            self.marked[currentVertex.getvertexIndex()] = True
+
+            if currentVertex.getvertexIndex == self.toIndex:
+                foundPath = True
+            
+            for edge in graph.graph[currentVertex.getvertexIndex()]:
+                neighbor = edge.gettoIndex()
+                pathcost = edge.getPathcost()
+                neighborVertex = Vertex.getVertex(neighbor)
+                if not self.marked[neighbor] and not neighborVertex in queue:
+                    neighborVertex.setPathcost(currentVertex.getPathcost + pathcost)
+                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
+                    queue.put(neighborVertex)
+                elif neighborVertex in queue and neighborVertex.getPathcost() > currentVertex.getPathcost + pathcost:
+                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
+                    neighborVertex.setPathcost(currentVertex + pathcost)
+                    queue.remove(neighborVertex)
+                    queue.put(neighborVertex)
+    
+    def hasPathTo(self,vertex):
+        return self.marked[vertex]
+    
+    def pathTo(self, vertex):
+        if not self.hasPathTo(vertex):
+            return null
+        path = []
+        x = vertex
+        while x != self.fromIndex:
+            path.append(x)
+            x = self.edgeTo(x)
+        path.append(self.fromIndex)
+        return path
+
+
+
 
 
 
