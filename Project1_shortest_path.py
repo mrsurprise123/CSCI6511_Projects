@@ -2,6 +2,7 @@
 # @author Yihan chen
 from queue import PriorityQueue
 import math
+import time
 
 #class to repersents the vertices of graphs
 class Vertex:
@@ -72,11 +73,6 @@ class Edge:
     def getedgeCost(self):
         return self.edgeCost
     
-    def hashcode(self):
-        pass
-    
-    def equal(self,edge):
-        pass
 
 # class to represent the graph
 class Graph:
@@ -230,6 +226,91 @@ class AStar:
             x = self.edgeTo(x)
         path.append(self.fromIndex)
         return path
+
+def generateGraph(vertexNumber,file):
+    isVertex = True
+    graph = Graph(vertexNumber)
+
+    for line in file.readlines():
+        if line[0] == '#' or line == 'Vertices':
+            continue
+        if line == 'Edges':
+            isVertex = False
+            continue
+        elements = line.split(",",)
+        if isVertex:
+            Vertex.addVertex(int(elements[0]), (int(elements[1])) * 10 + (int(elements[2])))
+        else:
+            graph.addEdge(int(elements[0]), int(elements[1]),int(elements[2]))
+    
+    return graph
+
+def showPath(graph, path, isinformed):
+    if isinformed:
+        print("Result for informed search:")
+    else:
+        print("Result for uninformed search:")
+
+    PathCost = 0
+    currentV = path.pop()
+    print(currentV + '-->')
+    while not path.empty():
+        lastV = currentV
+        currentV = path.pop()
+        cost = graph.getedgeCost(last,currentV)
+        if cost == -1:
+            print("can not find the edge from vertex" + lastV + "to" + currentV)
+        PathCost += cost
+        print(currentV)
+        if path.empty():
+            break
+        print("-->")
+    print("Pathcost is " + PathCost)
+
+
+def uninformed(graph, fromIndex, toIndex, vertexNumber):
+    start = time.time()
+    ucs = UniformCostSearch(graph, fromIndex, toIndex, vertexNumber)
+    if ucs.hasPathTo(toIndex):
+        showPath(graph,ucs.pathTo(toIndex),False)
+    else:
+        print("There is no path to " + toIndex)
+    end = time.time()
+    print("Time for uninformed is " + end)
+
+def informed(graph, fromIndex, toIndex, vertexNumber):
+    start = time.time()
+    astar = AStar(graph, fromIndex, toIndex, vertexNumber)
+    if astar.hasPathTo(toIndex):
+        showPath(graph,astar.pathTo(toIndex),True)
+    else:
+        print("There is no path to " + toIndex)
+    end = time.time()
+    print("Time for informed is " + end)
+
+
+
+
+
+def main():
+    filename = input("Please input the file name")
+    fromIndex = input("Please input the fromIndex")
+    toIndex = input("Please input the ToIndex")
+
+    file = open(filename)
+    vertexNumber = int(filename[5,filename.find('_')])
+
+    graph = generateGraph(vertexNumber,file)
+
+    uninformed(graph, fromIndex, toIndex, vertexNumber)
+    informed(graph, fromIndex, toIndex, vertexNumber)
+    Vertex.clearVertices()
+    file.close()
+
+if __name__ == '__main__':
+    main()
+
+
 
 
 
