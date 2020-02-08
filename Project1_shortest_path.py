@@ -3,7 +3,7 @@
 from queue import PriorityQueue
 import math
 import time
-
+import re
 #class to repersents the vertices of graphs
 class Vertex:
     vertices = []
@@ -97,7 +97,7 @@ class Graph:
         for e in self.graph[fromIndex]:
             if e.gettoIndex == toIndex:
                 return e.getedgeCost()
-        return -1
+        return float('inf')
 
 # class to repersent the uniform cost search
 
@@ -107,35 +107,31 @@ class UniformCostSearch:
         self.edgeTo = [0 for i in range(graph.getedgeCount())]
         self.fromIndex = fromIndex
         self.toIndex = toIndex
-        self.bfs(graph, maSize)
+        self.graph = graph
+        self.maxSize = maxSize
+        self.path, self.cost = self.dijkstra()
     
-    def bfs(self,graph, maxSize):
-        Vertex.getVertex(self.fromIndex).setPathcost(0)
-        queue = PriorityQueue(maxSize)
-        queue.put(Vertex.getVertex(self.fromIndex))
-        foundPath = False
+    def dijkstra(self):
+        dist = [float('inf')] * self.maxSize
+        dist[self.fromIndex] = 0
+        book = [0] * self.maxSize
+        path = [''] * self.maxSize
+        u = self.fromIndex
+        for _ in range(self.maxSize - 1):
+            book[u] = 1
+            next_u, minVal = None, float('inf')
+            for v in range(n):
+                w = self.graph.getedgeCost(u,v)
+                if w == float('inf'):
+                    continue
+                if not book[v] and dist[u] + w < dist[v]:
+                    dist[v] = dist[u] + w
+                    path[v] = path[u] + '-->' + v
+                    if dist[v] < minVal:
+                        next_u, minVal = v, dist[v]
+            u = next_u
+        return path,dist
 
-        while queue.empty() == False and not foundPath:
-            currentVertex = queue.get()
-            self.marked[currentVertex.getvertexIndex()] = True
-
-            if currentVertex.getvertexIndex == self.toIndex:
-                foundPath = True
-            
-            for edge in graph.graph[currentVertex.getvertexIndex()]:
-                neighbor = edge.gettoIndex()
-                pathcost = edge.getPathcost()
-                neighborVertex = Vertex.getVertex(neighbor)
-                if not self.marked[neighbor] and not neighborVertex in queue:
-                    neighborVertex.setPathcost(currentVertex.getPathcost + pathcost)
-                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
-                    queue.put(neighborVertex)
-                elif neighborVertex in queue and neighborVertex.getPathcost() > currentVertex.getPathcost + pathcost:
-                    self.edgeTo[neighbor] = currentVertex.getvertexIndex()
-                    neighborVertex.setPathcost(currentVertex + pathcost)
-                    queue.remove(neighborVertex)
-                    queue.put(neighborVertex)
-    
     def hasPathTo(self,vertex):
         return self.marked[vertex]
     
@@ -271,8 +267,10 @@ def showPath(graph, path, isinformed):
 def uninformed(graph, fromIndex, toIndex, vertexNumber):
     start = time.time()
     ucs = UniformCostSearch(graph, fromIndex, toIndex, vertexNumber)
-    if ucs.hasPathTo(toIndex):
-        showPath(graph,ucs.pathTo(toIndex),False)
+    if ucs.path(toIndex) != '':
+        print("Result for uninformed search:")
+        print(ucs.path[toIndex])
+        print("Pathcost is " + ucs.dist[toIndex])
     else:
         print("There is no path to " + toIndex)
     end = time.time()
@@ -293,12 +291,13 @@ def informed(graph, fromIndex, toIndex, vertexNumber):
 
 
 def main():
-    filename = input("Please input the file name")
-    fromIndex = input("Please input the fromIndex")
-    toIndex = input("Please input the ToIndex")
+    filename = input("Please input the file name ")
+    fromIndex = input("Please input the fromIndex ")
+    toIndex = input("Please input the ToIndex ")
 
     file = open(filename)
-    vertexNumber = int(filename[5,filename.find('_')])
+    str = filename.split('_')
+    vertexNumber = int(str[0][5:])
 
     graph = generateGraph(vertexNumber,file)
 
