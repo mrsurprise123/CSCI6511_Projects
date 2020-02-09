@@ -3,7 +3,8 @@
 from queue import PriorityQueue
 import math
 import time
-import re
+global Maxnumber
+Maxnumber = 99999999999999
 #class to repersents the vertices of graphs
 class Vertex:
     vertices = []
@@ -17,7 +18,9 @@ class Vertex:
         self.fValue = 0
     
     def __lt__(self, other):
-        return self.pathCost < other.pathCost
+        return self.fValue < other.fValue
+    # def __gt__(self, other):
+    #     return self.fValue > other.fValue
 
     @classmethod
     def addVertex(cls, vertexIndex, vertexSquare):
@@ -36,8 +39,8 @@ class Vertex:
     def getfValue(self):
         return self.fValue
     
-    def setfValue(self,fvalue):
-        self.fValue = fvalue
+    def setfValue(self,fValue):
+        self.fValue = fValue
     
     def getgValue(self):
         return self.gValue
@@ -65,14 +68,6 @@ class Edge:
         self.fromIndex = fromIndex
         self.toIndex = toIndex
         self.edgeCost = edgeCost
-    
-    def getfromIndex(self):
-        return self.fromIndex
-    def gettoIndex(self):
-        return self.toIndex
-    def getedgeCost(self):
-        return self.edgeCost
-    
 
 # class to represent the graph
 class Graph:
@@ -92,114 +87,123 @@ class Graph:
         self.graph[fromIndex].append(Edge(fromIndex, toIndex, edgeCost))
         self.graph[toIndex].append(Edge(toIndex,fromIndex,edgeCost))
         self.edgeCount += 1
-    
+    def getedges(self,vertex):
+        return self.graph[vertex]
     def getedgeCost(self, fromIndex, toIndex):
         for e in self.graph[fromIndex]:
-            if e.gettoIndex == toIndex:
-                return e.getedgeCost()
-        return float('inf')
+            if e.toIndex == toIndex:
+                return e.edgeCost
+        return Maxnumber
 
 # class to repersent the uniform cost search
 
 class UniformCostSearch:
     def __init__(self, graph, fromIndex, toIndex, maxSize):
-        self.marked = [False for i in range(graph.getvertexCount())]
-        self.edgeTo = [0 for i in range(graph.getedgeCount())]
         self.fromIndex = fromIndex
         self.toIndex = toIndex
         self.graph = graph
         self.maxSize = maxSize
-        self.path, self.cost = self.dijkstra()
+        self.path = self.dijkstra()
     
     def dijkstra(self):
-        dist = [float('inf')] * self.maxSize
-        dist[self.fromIndex] = 0
-        book = [0] * self.maxSize
-        path = [''] * self.maxSize
-        u = self.fromIndex
-        for _ in range(self.maxSize - 1):
-            book[u] = 1
-            next_u, minVal = None, float('inf')
-            for v in range(n):
-                w = self.graph.getedgeCost(u,v)
-                if w == float('inf'):
-                    continue
-                if not book[v] and dist[u] + w < dist[v]:
-                    dist[v] = dist[u] + w
-                    path[v] = path[u] + '-->' + v
-                    if dist[v] < minVal:
-                        next_u, minVal = v, dist[v]
-            u = next_u
-        return path,dist
+        shortest_paths = {self.fromIndex: (None,0)}
+        current_node = self.fromIndex
+        visited = set()
 
-    def hasPathTo(self,vertex):
-        return self.marked[vertex]
-    
-    def pathTo(self, vertex):
-        if not self.hasPathTo(vertex):
-            return null
+        while current_node != self.toIndex:
+            visited.add(current_node)
+            destinations = self.graph.getedges(current_node)
+            weight_to_current_node = shortest_paths[current_node][1]
+
+            for next_node in destinations:
+                weight = self.graph.getedgeCost(current_node,next_node.toIndex) + weight_to_current_node
+                if next_node.toIndex not in shortest_paths:
+                    shortest_paths[next_node.toIndex] = (current_node, weight)
+                else:
+                    current_shortest_weight = shortest_paths[next_node.toIndex][1]
+                    if current_shortest_weight > weight:
+                        shortest_paths[next_node.toIndex] = (current_node, weight)
+
+            next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
+            if not next_destinations:
+                return "There is no route to " + str(self.toIndex)
+            current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
+        
         path = []
-        x = vertex
-        while x != self.fromIndex:
-            path.append(x)
-            x = self.edgeTo(x)
-        path.append(self.fromIndex)
+        while current_node is not None:
+            path.append(current_node)
+            next_node = shortest_paths[current_node][0]
+            current_node = next_node
+        # Reverse path
+        path = path[::-1]
         return path
+
 
 # class to repersent the A* algorithm
 class AStar:
     def __init__(self, graph, fromIndex, toIndex, maxSize):
         self.marked = [False for i in range(graph.getvertexCount())]
-        self.edgeTo = [0 for i in range(graph.getedgeCount())]
+        self.edgeTo = [None for i in range(graph.getedgeCount())]
         self.fromIndex = fromIndex
         self.toIndex = toIndex
-        self.astar(graph, maSize)
+        self.astar(graph, maxSize)
     
     def astar(self, graph, maxSize):
-        Vertex.getVertex(self.fromIndex).setPathcost(0)
-        Vertex.getVertex(self.fromIndex).setfValue(heuristic(self.fromIndex, self.toIndex))
+        Vertex.getVertex(self.fromIndex).setfValue(int(self.heuristic(self.fromIndex, self.toIndex)))
+        # print(Vertex.getVertex(self.fromIndex).fValue)
         queue = PriorityQueue(maxSize)
+        queueContains = [False for i in range(graph.getvertexCount())]
         queue.put(Vertex.getVertex(self.fromIndex))
+        queueContains[self.fromIndex] = True
         foundPath = False
 
         while queue.empty() == False and not foundPath:
             currentVertex = queue.get()
+            print(currentVertex.vertexIndex,end=' ')
+            print(currentVertex.fValue, end=' ')
+            print(currentVertex.gValue)
+            queueContains[currentVertex.getvertexIndex()] = False
             self.marked[currentVertex.getvertexIndex()] = True
 
             if currentVertex.getvertexIndex == self.toIndex:
                 foundPath = True
-            
             for edge in graph.graph[currentVertex.getvertexIndex()]:
-                neighbor = edge.gettoIndex()
+                neighbor = edge.toIndex
                 if self.marked[neighbor]:
                     continue
-
                 neighborVertex = Vertex.getVertex(neighbor)
-                tentativeGValue = currentVertex.getgValue() + edge.getedgeCost()
-                estimatedFScore = tentativeGValue + heuritic(neighborVertex, self.toIndex)
-
-                if not self.marked[neighbor] and not neighborVertex in queue:
+                GValue = currentVertex.getgValue() + edge.edgeCost
+                FValue = GValue + int(self.heuristic(neighbor, self.toIndex))
+                if not queueContains[neighbor]:
                     self.edgeTo[neighbor] = currentVertex.getvertexIndex()
-                    neighborVertex.setfValue(estimatedFScore)
-                    neighborVertex.setgValue(tentativeGValue)
+                    neighborVertex.setfValue(FValue)
+                    neighborVertex.setgValue(GValue)
                     queue.put(neighborVertex)
-                elif neighborVertex in queue and estimatedFScore < neighborVertex.getfValue:
+                    queueContains[neighbor] = True
+                elif queueContains[neighbor] and FValue < neighborVertex.gValue:
                     self.edgeTo[neighbor] = currentVertex.getvertexIndex()
-                    neighborVertex.setfValue(estimatedFScore)
-                    neighborVertex.setgValue(tentativeGValue)
-                    queue.remove(neighborVertex)
+                    neighborVertex.setfValue(FValue)
+                    neighborVertex.setgValue(GValue)
+                    tempqueue = PriorityQueue(maxSize)
+                    while queue.empty() == False:
+                        temp = queue.get()
+                        if temp.getvertexIndex() == neighbor:
+                            continue
+                        tempqueue.put(temp)
+                    # queue.remove(neighborVertex)
+                    # while tempqueue
+                    queue = tempqueue
                     queue.put(neighborVertex)
     
-    def heuristic(vertex1, vertex2):
+    def heuristic(self,vertex1, vertex2):
         v1 = Vertex.getVertex(vertex1)
         v2 = Vertex.getVertex(vertex2)
-
-        x = abs((v1.getvertexSquare / 10) - (v2.getvertexSquare / 10)) - 1
-        y = abs((v1.getvertexSquare % 10) - (v2.getvertexSquare % 10)) - 1
+        x = abs(int((v1.getvertexSquare() / 10)) - int((v2.getvertexSquare() / 10))) - 1
+        y = abs((v1.getvertexSquare() % 10) - (v2.getvertexSquare() % 10)) - 1
 
         if x >= 0:
             if y >= 0:
-                return sqrt(math.pow(x,2) + math.pow(y,3)) * 100
+                return math.sqrt(math.pow(x,2) + math.pow(y,2)) * 100
             else:
                 return x * 100
         else:
@@ -207,7 +211,6 @@ class AStar:
                 return y * 100
             else:
                 return 0
-
     
     def hasPathTo(self,vertex):
         return self.marked[vertex]
@@ -219,7 +222,7 @@ class AStar:
         x = vertex
         while x != self.fromIndex:
             path.append(x)
-            x = self.edgeTo(x)
+            x = self.edgeTo[x]
         path.append(self.fromIndex)
         return path
 
@@ -228,81 +231,75 @@ def generateGraph(vertexNumber,file):
     graph = Graph(vertexNumber)
 
     for line in file.readlines():
-        if line[0] == '#' or line == 'Vertices':
+        if line[0] == '#' or line == 'Vertices\n':
             continue
-        if line == 'Edges':
+        if line == 'Edges\n':
             isVertex = False
             continue
-        elements = line.split(",",)
+        elements = line.split(",")
         if isVertex:
-            Vertex.addVertex(int(elements[0]), (int(elements[1])) * 10 + (int(elements[2])))
+            Vertex.addVertex(int(elements[0]), int(elements[1]) * 10 + int(elements[2]))
+            # temp = int(elements[1]) * 10 + int(elements[2])
+            # print(str(elements[0]) + " " + str(temp))
         else:
             graph.addEdge(int(elements[0]), int(elements[1]),int(elements[2]))
     
+    # for i in range(vertexNumber):
+    #     for e in graph.graph[i]:
+    #         print("Edge:" + str(e.fromIndex) + " " + str(e.toIndex) + " " + str(e.edgeCost))
+
     return graph
 
-def showPath(graph, path, isinformed):
-    if isinformed:
-        print("Result for informed search:")
-    else:
-        print("Result for uninformed search:")
-
+def showPath(graph, path):
+    print("Result for informed search:")
     PathCost = 0
     currentV = path.pop()
-    print(currentV + '-->')
-    while not path.empty():
+    print(str(currentV) + '-->',end='')
+    while len(path) != 0:
         lastV = currentV
         currentV = path.pop()
-        cost = graph.getedgeCost(last,currentV)
-        if cost == -1:
+        cost = graph.getedgeCost(lastV,currentV)
+        if cost == Maxnumber:
             print("can not find the edge from vertex" + lastV + "to" + currentV)
         PathCost += cost
-        print(currentV)
-        if path.empty():
+        print(currentV,end='')
+        if len(path) == 0:
             break
-        print("-->")
-    print("Pathcost is " + PathCost)
-
-
-def uninformed(graph, fromIndex, toIndex, vertexNumber):
-    start = time.time()
-    ucs = UniformCostSearch(graph, fromIndex, toIndex, vertexNumber)
-    if ucs.path(toIndex) != '':
-        print("Result for uninformed search:")
-        print(ucs.path[toIndex])
-        print("Pathcost is " + ucs.dist[toIndex])
-    else:
-        print("There is no path to " + toIndex)
-    end = time.time()
-    print("Time for uninformed is " + end)
-
-def informed(graph, fromIndex, toIndex, vertexNumber):
-    start = time.time()
-    astar = AStar(graph, fromIndex, toIndex, vertexNumber)
-    if astar.hasPathTo(toIndex):
-        showPath(graph,astar.pathTo(toIndex),True)
-    else:
-        print("There is no path to " + toIndex)
-    end = time.time()
-    print("Time for informed is " + end)
-
-
-
-
+        print("-->",end='')
+    print('')
+    print("Pathcost is " + str(PathCost))
 
 def main():
     filename = input("Please input the file name ")
-    fromIndex = input("Please input the fromIndex ")
-    toIndex = input("Please input the ToIndex ")
+    fromIndex = int(input("Please input the fromIndex "))
+    toIndex = int(input("Please input the ToIndex "))
 
     file = open(filename)
     str = filename.split('_')
     vertexNumber = int(str[0][5:])
-
     graph = generateGraph(vertexNumber,file)
 
-    uninformed(graph, fromIndex, toIndex, vertexNumber)
-    informed(graph, fromIndex, toIndex, vertexNumber)
+
+    # uninformed search
+    start = time.time()
+    ucs = UniformCostSearch(graph, fromIndex, toIndex, vertexNumber)
+    print(ucs.path)
+    end = time.time()
+    print("Time for uninformed is ")
+    print(end)
+
+    # informed search
+    start = time.time()
+    astar = AStar(graph, fromIndex, toIndex, vertexNumber)
+    if astar.hasPathTo(toIndex):
+        showPath(graph,astar.pathTo(toIndex))
+    else:
+        print("There is no path to ")
+        print(toIndex)
+    end = time.time()
+    print("Time for informed is ")
+    print(end)
+
     Vertex.clearVertices()
     file.close()
 
