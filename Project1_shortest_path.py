@@ -236,7 +236,6 @@ def generateGraph(vertexNumber,file):
             graph.addEdge(int(elements[0]), int(elements[1]),int(elements[2]))
 
     return graph
-def generateGraph(vertexNumber,file,isVertex):
 
 
 def main():
