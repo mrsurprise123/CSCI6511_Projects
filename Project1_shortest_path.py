@@ -227,12 +227,13 @@ def generateGraph(vertexNumber,file):
         if line == 'Edges\n':
             isVertex = False
             continue
+        if line == '\n':
+            break
         elements = line.split(",")
         if isVertex:
             # Vertex.addVertex(int(elements[0]), int(elements[1]) * 10 + int(elements[2]))
             Vertex.addVertex(int(elements[0]), int(elements[1]))
         else:
-            print(elements[0])
             graph.addEdge(int(elements[0]), int(elements[1]),int(elements[2]))
 
     return graph
