@@ -1,7 +1,7 @@
 # Every line that begins with # is a comment
 # Landscape consists of 10 "squares" by 10 "squares" (like a chessboard), indexed from 0 through 9
 # Vertices: Index, Square
-Verties
+Vertices
 0,30
 1,46
 2,18
