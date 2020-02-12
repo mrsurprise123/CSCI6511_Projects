@@ -95,29 +95,33 @@ class UniformCostSearch:
         while current_node != self.toIndex:
             visited.add(current_node)
             destinations = self.graph.getedges(current_node)
-            weight_to_current_node = shortest_paths[current_node][1]
+            cost_to_current_node = shortest_paths[current_node][1]
 
             for next_node in destinations:
-                weight = self.graph.getedgeCost(current_node,next_node.toIndex) + weight_to_current_node
+                cost = self.graph.getedgeCost(current_node,next_node.toIndex) + cost_to_current_node
                 if next_node.toIndex not in shortest_paths:
-                    shortest_paths[next_node.toIndex] = (current_node, weight)
+                    shortest_paths[next_node.toIndex] = (current_node, cost)
                 else:
-                    current_shortest_weight = shortest_paths[next_node.toIndex][1]
-                    if current_shortest_weight > weight:
-                        shortest_paths[next_node.toIndex] = (current_node, weight)
+                    current_shortest_cost = shortest_paths[next_node.toIndex][1]
+                    if current_shortest_cost > cost:
+                        shortest_paths[next_node.toIndex] = (current_node, cost)
 
             next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
             if not next_destinations:
-                return "There is no route to " + str(self.toIndex)
+                return "There is no path to " + str(self.toIndex)
             current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
         
         path = []
+        pathcost = 0
         while current_node is not None:
             path.append(current_node)
             next_node = shortest_paths[current_node][0]
+            if next_node is not None:
+                pathcost += self.graph.getedgeCost(current_node,next_node)
             current_node = next_node
         # Reverse path
         path = path[::-1]
+        print("Pathcost is " + str(pathcost))
         return path
 
 
@@ -128,12 +132,14 @@ class AStar:
         self.edgeTo = [None for i in range(graph.vertexCount)]
         self.fromIndex = fromIndex
         self.toIndex = toIndex
-        self.astar(graph, maxSize)
+        self.maxSize = maxSize
+        self.graph = graph
+        self.astar()
     
-    def astar(self, graph, maxSize):
+    def astar(self):
         Vertex.getVertex(self.fromIndex).fValue = int(self.heuristic(self.fromIndex, self.toIndex))
-        queue = PriorityQueue(maxSize)
-        queueContains = [False for i in range(graph.vertexCount)]
+        queue = PriorityQueue(self.maxSize)
+        queueContains = [False for i in range(self.graph.vertexCount)]
         queue.put(Vertex.getVertex(self.fromIndex))
         queueContains[self.fromIndex] = True
         foundPath = False
@@ -145,7 +151,7 @@ class AStar:
 
             if currentVertex.vertexIndex == self.toIndex:
                 foundPath = True
-            for edge in graph.graph[currentVertex.vertexIndex]:
+            for edge in self.graph.graph[currentVertex.vertexIndex]:
                 neighbor = edge.toIndex
                 if self.marked[neighbor]:
                     continue
@@ -162,7 +168,7 @@ class AStar:
                     self.edgeTo[neighbor] = currentVertex.vertexIndex
                     neighborVertex.fValue = FValue
                     neighborVertex.gValue = GValue
-                    tempqueue = PriorityQueue(maxSize)
+                    tempqueue = PriorityQueue(self.maxSize)
                     while queue.empty() == False:
                         temp = queue.get()
                         if temp.vertexIndex == neighbor:
