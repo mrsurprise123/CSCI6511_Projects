@@ -1,12 +1,16 @@
 # This is the Python project for CSCI66511
 # @author Yihan chen
 from copy import copy
+import itertools as it
 class State:
     def __init__(self,x,y,terminal,value):
         self.x = x
         self.y = y
         self.terminal = terminal
         self.value = value
+    def Setnoise(self,noises):
+        self.noises = noises
+
 class Grid:
     def __init__(self,filename,k):
         file = open(filename)
@@ -44,47 +48,41 @@ class Grid:
         return grid
     def value_iteration(self,grid):
         old_grid = grid.copy()
+        noiseslist = list(it.permutations([float(self.noises[0]), float(self.noises[1]), float(self.noises[2]), float(self.noises[3])]))
         for state in grid.values():
             if state.terminal:
                 continue
-            waiting_states = [copy(state), copy(state), copy(state), copy(state)]
-            self.update(waiting_states[0], float(self.noises[0]), float(self.noises[1]), float(self.noises[3]), float(self.noises[2]), old_grid)
-            self.update(waiting_states[1], float(self.noises[1]), float(self.noises[0]), float(self.noises[2]), float(self.noises[3]), old_grid)
-            self.update(waiting_states[2], float(self.noises[3]), float(self.noises[1]), float(self.noises[0]), float(self.noises[2]), old_grid)
-            self.update(waiting_states[3], float(self.noises[1]), float(self.noises[3]), float(self.noises[2]), float(self.noises[0]), old_grid)
+            waiting_states = []
+            for i in range(0,24):
+                waiting_states.append(State(state.x,state.y,state.terminal,state.value))
+            for i in range(0,24):
+                waiting_states[i].Setnoise(noiseslist[i])
+                self.update(waiting_states[i],old_grid)
             max_state = waiting_states[0]
             for waiting_state in waiting_states:
                 if max_state.value < waiting_state.value:
                     max_state = waiting_state
             grid[(state.x, state.y)] = copy(max_state)
             del waiting_states
-    def update(self,this_state, left, up, right, down,grid):
-        up_row_index = this_state.x
-        down_row_index = this_state.x
-        left_col_index = this_state.y
-        right_col_index = this_state.y
+    def update(self,state, grid):
         final_result = 0
-        if not up_row_index - 1 < 0:
-            up_row_index -= 1
-            final_result += (grid[(up_row_index, this_state.y)].value * up * self.discount)
+        if not state.y - 1 < 0:
+            final_result += (grid[(state.x, state.y - 1)].value * state.noises[0] * self.discount)
         else:
-            final_result += (this_state.value * up * self.discount)
-        if down_row_index + 1 < self.gridsize:
-            down_row_index += 1
-            final_result += (grid[(down_row_index, this_state.y)].value * down * self.discount)
+            final_result += (state.value * state.noises[0] * self.discount)
+        if not state.x - 1 < 0:
+            final_result += (grid[(state.x - 1, state.y)].value * state.noises[1] * self.discount)
         else:
-            final_result += (this_state.value * down * self.discount)
-        if not left_col_index - 1 < 0:
-            left_col_index -= 1
-            final_result += (grid[(this_state.x, left_col_index)].value * left * self.discount)
+            final_result += (state.value * state.noises[1] * self.discount)
+        if state.y + 1 < self.gridsize:
+            final_result += (grid[(state.x, state.y + 1)].value * state.noises[2] * self.discount)
         else:
-            final_result += (this_state.value * left * self.discount)
-        if right_col_index + 1 < self.gridsize:
-            right_col_index += 1
-            final_result += (grid[(this_state.x, right_col_index)].value * right * self.discount)
+            final_result += (state.value * state.noises[2] * self.discount)
+        if state.x + 1 < self.gridsize:
+            final_result += (grid[(state.x + 1, state.y)].value * state.noises[3] * self.discount)
         else:
-            final_result += (this_state.value * right * self.discount)
-        this_state.value = final_result
+            final_result += (state.value * state.noises[3] * self.discount)
+        state.value = final_result
 
 def main():
     print("Proejct3_YihanChen")
