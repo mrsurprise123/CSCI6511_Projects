@@ -12,11 +12,6 @@ class State:
         self.value = value
         self.noises = noises
 
-    def Setnoise(self,noises):
-        for i in range(0,4):
-            self.noises[i] = noises[i]
-
-
 class Grid:
     def __init__(self,filename,k):
         file = open(filename)
@@ -105,6 +100,7 @@ class Grid:
             max_state = self.Maxstates(temp_states)
             grid[(state.x, state.y)] = copy(max_state)
             del temp_states
+
     def Equation(self,state, grid):
         final_result = 0
         if not state.y - 1 < 0:
