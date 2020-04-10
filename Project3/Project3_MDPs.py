@@ -107,29 +107,29 @@ class Grid:
             del temp_states
 
     def Equation(self,state, grid):
-        final_result = 0
+        result = 0
         if not state.y - 1 < 0:
-            final_result += (grid[(state.x, state.y - 1)].value * state.noises[0] * self.discount)
+            result += (grid[(state.x, state.y - 1)].value * state.noises[0] * self.discount)
         else:
-            final_result += (state.value * state.noises[0] * self.discount)
+            result += (state.value * state.noises[0] * self.discount)
         if not state.x - 1 < 0:
-            final_result += (grid[(state.x - 1, state.y)].value * state.noises[1] * self.discount)
+            result += (grid[(state.x - 1, state.y)].value * state.noises[1] * self.discount)
         else:
-            final_result += (state.value * state.noises[1] * self.discount)
+            result += (state.value * state.noises[1] * self.discount)
         if state.x + 1 < self.gridsize:
-            final_result += (grid[(state.x + 1, state.y)].value * state.noises[2] * self.discount)
+            result += (grid[(state.x + 1, state.y)].value * state.noises[2] * self.discount)
         else:
-            final_result += (state.value * state.noises[2] * self.discount)
+            result += (state.value * state.noises[2] * self.discount)
         if state.y + 1 < self.gridsize:
-            final_result += (grid[(state.x, state.y + 1)].value * state.noises[3] * self.discount)
+            result += (grid[(state.x, state.y + 1)].value * state.noises[3] * self.discount)
         else:
-            final_result += (state.value * state.noises[3] * self.discount)
-        state.value = final_result
+            result += (state.value * state.noises[3] * self.discount)
+        state.value = result
 
 def main():
     print("Proejct3_YihanChen")
-    filename = input("Please input the file name ")
-    k = input("Please input the value of k ")
+    filename = input("Please input the file name: ")
+    k = input("Please input the iterations times: ")
     grid = Grid(filename,int(k))
     resultgrid = grid.iterations()
     valueiterationResult = resultgrid[0]
