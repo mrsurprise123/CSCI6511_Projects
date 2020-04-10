@@ -1,9 +1,9 @@
-# This is the Python project for CSCI66511
+# This is the Python project3 for CSCI66511
 # @author Yihan chen
 from copy import copy
 import itertools as it
 import math
-
+import time
 class State:
     def __init__(self,x,y,terminal,value,noises):
         self.x = x
@@ -38,8 +38,6 @@ class Grid:
                     float(self.noises[1]), float(self.noises[2]), float(self.noises[3])])
     
     def print_Grid(self,grid):
-        print("Size:", str(self.gridsize))
-        print("Discount:", str(self.discount))
         for x in range(0, self.gridsize):
             line = ''
             for y in range(0,self.gridsize):
@@ -49,9 +47,16 @@ class Grid:
     def iterations(self):
         ValueiterationGrid = copy(self.grid)
         PolicyiterationGrid = copy(self.grid)
+        start = time.time()
         for i in range(0, self.k):
             self.value_iteration(ValueiterationGrid)
+        end = time.time()
+        print("Time for Valueiteration is ", end)
+        start = time.time()
+        for i in range(0, self.k):
             self.policy_iteration(PolicyiterationGrid)
+        end = time.time()
+        print("Time for Policyiteration is ", end)
         return ValueiterationGrid,PolicyiterationGrid
 
     def policy_iteration(self,grid):
@@ -120,7 +125,6 @@ class Grid:
         else:
             final_result += (state.value * state.noises[3] * self.discount)
         state.value = final_result
-        return final_result
 
 def main():
     print("Proejct3_YihanChen")
@@ -130,7 +134,9 @@ def main():
     resultgrid = grid.iterations()
     valueiterationResult = resultgrid[0]
     policyiterationResult = resultgrid[1]
+    print("The grid after valueiteration")
     grid.print_Grid(valueiterationResult)
+    print("The grid after policyiteration")
     grid.print_Grid(policyiterationResult)
 
 if __name__ == '__main__':
